@@ -1,0 +1,80 @@
+{
+  "sources": [
+    {
+      "name": "open_targets",
+      "assets": [
+        {
+          "name": "targets",
+          "url_env": "OPEN_TARGETS_TARGET_URL",
+          "destination_name": "targets",
+          "mode": "directory",
+          "allowed_suffixes": [".parquet"]
+        },
+        {
+          "name": "diseases",
+          "url_env": "OPEN_TARGETS_DISEASE_URL",
+          "destination_name": "diseases",
+          "mode": "directory",
+          "allowed_suffixes": [".parquet"]
+        },
+        {
+          "name": "associations",
+          "url_env": "OPEN_TARGETS_ASSOCIATION_URL",
+          "destination_name": "associations",
+          "mode": "directory",
+          "allowed_suffixes": [".parquet"]
+        }
+      ]
+    },
+    {
+      "name": "reactome",
+      "assets": [
+        {
+          "name": "pathways",
+          "url_env": "REACTOME_PATHWAYS_URL",
+          "destination_name": "ReactomePathways.txt",
+          "mode": "file"
+        },
+        {
+          "name": "uniprot_pathways",
+          "url_env": "REACTOME_UNIPROT_PATHWAYS_URL",
+          "destination_name": "UniProt2Reactome_All_Levels.txt",
+          "mode": "file"
+        }
+      ]
+    },
+    {
+      "name": "uniprot",
+      "assets": [
+        {
+          "name": "proteins",
+          "url_env": "UNIPROT_PROTEINS_URL",
+          "destination_name": "uniprot_human.tsv.gz",
+          "mode": "file"
+        }
+      ]
+    },
+    {
+      "name": "biogrid",
+      "assets": [
+        {
+          "name": "tab3",
+          "url_env": "BIOGRID_TAB3_URL",
+          "destination_name": "BIOGRID-ALL-LATEST.tab3.zip",
+          "mode": "file"
+        }
+      ]
+    },
+    {
+      "name": "chembl",
+      "assets": [
+        {
+          "name": "sqlite",
+          "url_env": "CHEMBL_SQLITE_URL",
+          "destination_name": "chembl_sqlite.tar.gz",
+          "mode": "file"
+        }
+      ]
+    }
+  ]
+}
