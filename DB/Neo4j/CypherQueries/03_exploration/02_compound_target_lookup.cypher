@@ -1,5 +1,5 @@
 // Return compounds targeting a given protein accession.
-// :param protein_node_id => 'UNIPROT:P35354';
+// :param protein_node_id => Protein entity node_id. Example: UNIPROT:P35354;
 
 MATCH (c:Entity {label: 'Compound'})-[r:RELATED_TO]->(p:Entity {node_id: $protein_node_id})
 WHERE r.relationship_type = 'TARGETS'

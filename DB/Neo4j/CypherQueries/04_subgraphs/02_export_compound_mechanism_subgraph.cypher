@@ -1,5 +1,5 @@
 // Extract a compound-target mechanism subgraph.
-// :param compound_node_id => 'CHEMBL:CHEMBL25';
+// :param compound_node_id => Compound entity node_id. Example: CHEMBL:CHEMBL25;
 
 MATCH path = (c:Entity {node_id: $compound_node_id})-[r:RELATED_TO]->(target:Entity)
 WHERE r.relationship_type = 'TARGETS'

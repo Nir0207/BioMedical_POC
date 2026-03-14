@@ -1,0 +1,67 @@
+services:
+  backend-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: backend-api
+    env_file:
+      - ../../.env
+    environment:
+      BACKEND_DATABASE_URL: ${BACKEND_DATABASE_URL:-postgresql+asyncpg://backend_app:backend_app_pw@backend-postgres:5432/backend_app}
+      BACKEND_NEO4J_URI: ${BACKEND_NEO4J_URI:-bolt://host.docker.internal:7688}
+      BACKEND_NEO4J_USERNAME: ${BACKEND_NEO4J_USERNAME:-neo4j}
+      BACKEND_NEO4J_PASSWORD: ${BACKEND_NEO4J_PASSWORD:-KGFramework_2026!}
+      BACKEND_JWT_SECRET: ${BACKEND_JWT_SECRET:-change_me_in_env}
+      BACKEND_APP_PORT: ${BACKEND_APP_PORT:-8001}
+    volumes:
+      - ./src:/app/src
+      - ./tests:/app/tests
+      - ../../DB:/app/db
+    ports:
+      - "${BACKEND_APP_PORT:-8001}:8000"
+    depends_on:
+      backend-postgres:
+        condition: service_healthy
+
+  backend-postgres:
+    image: postgres:16
+    container_name: backend-postgres
+    env_file:
+      - ../../.env
+    environment:
+      POSTGRES_DB: ${BACKEND_POSTGRES_DB:-backend_app}
+      POSTGRES_USER: ${BACKEND_POSTGRES_USER:-backend_app}
+      POSTGRES_PASSWORD: ${BACKEND_POSTGRES_PASSWORD:-backend_app_pw}
+    ports:
+      - "${BACKEND_POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - backend_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${BACKEND_POSTGRES_USER:-backend_app} -d ${BACKEND_POSTGRES_DB:-backend_app}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: backend-tests
+    env_file:
+      - ../../.env
+    environment:
+      BACKEND_DATABASE_URL: sqlite+aiosqlite:////tmp/backend_test.db
+      BACKEND_JWT_SECRET: ${BACKEND_JWT_SECRET:-change_me_in_env}
+      BACKEND_NEO4J_URI: bolt://example:7687
+      BACKEND_NEO4J_USERNAME: neo4j
+      BACKEND_NEO4J_PASSWORD: test
+      PYTHONPATH: /app/src
+    volumes:
+      - ./src:/app/src
+      - ./tests:/app/tests
+      - ../../DB:/app/db
+    command: ["pytest", "-q"]
+    profiles: ["test"]
+
+volumes:
+  backend_postgres_data:

@@ -32,3 +32,10 @@ KG_Framework/.pytest_cache/
 .pytest_cache/
 
 DB/Sample_Data/**
+Backend/API_Wrappers/.env.*
+.env.*
+
+.pytest_cache/
+
+KG_Framework/.pytest_cache/
+KG_Framework/.env.example
