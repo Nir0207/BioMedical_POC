@@ -18,13 +18,15 @@ import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
 import SchemaRoundedIcon from "@mui/icons-material/SchemaRounded";
 import TravelExploreRoundedIcon from "@mui/icons-material/TravelExploreRounded";
 import HubRoundedIcon from "@mui/icons-material/HubRounded";
+import PsychologyRoundedIcon from "@mui/icons-material/PsychologyRounded";
 import { useAuth } from "../features/auth/AuthContext";
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: <DashboardRoundedIcon fontSize="small" /> },
   { to: "/queries", label: "Query Workbench", icon: <SchemaRoundedIcon fontSize="small" /> },
   { to: "/graph", label: "Graph Explorer", icon: <TravelExploreRoundedIcon fontSize="small" /> },
-  { to: "/query-canvas", label: "Query Canvas", icon: <HubRoundedIcon fontSize="small" /> }
+  { to: "/query-canvas", label: "Query Canvas", icon: <HubRoundedIcon fontSize="small" /> },
+  { to: "/agentic", label: "Agentic Workflow", icon: <PsychologyRoundedIcon fontSize="small" /> }
 ];
 
 export function AppShell() {

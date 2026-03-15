@@ -4,6 +4,7 @@ import { ProtectedRoute } from "../routes/ProtectedRoute";
 import { DashboardPage } from "../pages/DashboardPage";
 import { GraphExplorerPage } from "../pages/GraphExplorerPage";
 import { LoginPage } from "../pages/LoginPage";
+import { AgenticWorkflowPage } from "../pages/AgenticWorkflowPage";
 import { QueryCanvasPage } from "../pages/QueryCanvasPage";
 import { QueryWorkbenchPage } from "../pages/QueryWorkbenchPage";
 
@@ -33,6 +34,10 @@ export const appRoutes: RouteObject[] = [
           {
             path: "/query-canvas",
             element: <QueryCanvasPage />
+          },
+          {
+            path: "/agentic",
+            element: <AgenticWorkflowPage />
           },
           {
             path: "*",

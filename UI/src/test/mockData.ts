@@ -1,4 +1,5 @@
 import type {
+  AgenticResearchQueryResponse,
   CypherQueryDefinition,
   CypherQueryExecutionResponse,
   GraphSummary,
@@ -247,4 +248,42 @@ export const mockQueryCanvasRunResponse: QueryCanvasRunResponse = {
       }
     }
   ]
+};
+
+export const mockAgenticResponse: AgenticResearchQueryResponse = {
+  user_query: "Find key targets for breast cancer and summarize evidence",
+  normalized_query: "find key targets for breast cancer and summarize evidence",
+  intent: "target_discovery",
+  module: "disease_target_discovery",
+  resolved_entities: [
+    {
+      type: "Disease",
+      id: "MONDO_0007254",
+      name: "breast cancer"
+    }
+  ],
+  final_answer: "Disease: breast cancer. Candidate genes: 2. Top-ranked target: TP53. Supporting evidence chunks: 1.",
+  citations: [
+    {
+      id: "EV-001",
+      source: "Open Targets"
+    }
+  ],
+  graph_payload: {
+    center_id: "MONDO_0007254",
+    depth: 2,
+    nodes: [
+      { id: "MONDO_0007254", label: "breast cancer", type: "Disease" },
+      { id: "ENSG00000141510", label: "TP53", type: "Gene" }
+    ],
+    edges: [{ id: "edge-1", source: "MONDO_0007254", target: "ENSG00000141510", type: "ASSOCIATED_WITH" }]
+  },
+  ranking_results: [
+    {
+      gene_id: "ENSG00000141510",
+      gene_symbol: "TP53",
+      score: 5
+    }
+  ],
+  errors: []
 };

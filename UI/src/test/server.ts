@@ -1,5 +1,6 @@
 import { http, HttpResponse } from "msw";
 import {
+  mockAgenticResponse,
   mockCypherQueries,
   mockGraphResponse,
   mockGraphSummary,
@@ -77,5 +78,6 @@ export const handlers = [
         { label: "Gene", count: 18000 }
       ]
     })
-  )
+  ),
+  http.post("http://localhost:8011/api/v1/agentic/research-query", async () => HttpResponse.json(mockAgenticResponse))
 ];

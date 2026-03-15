@@ -94,3 +94,26 @@ export interface QueryCanvasRunResponse {
   executed_cypher: string;
   parameters: Record<string, string | number>;
 }
+
+export interface AgenticResearchQueryRequest {
+  user_query: string;
+  top_k: number;
+}
+
+export interface AgenticResearchQueryResponse {
+  user_query: string;
+  normalized_query: string;
+  intent: string;
+  module: string;
+  resolved_entities: Array<{ type: string; id: string; name?: string }>;
+  final_answer: string;
+  citations: Array<{ id: string; source?: string }>;
+  graph_payload: {
+    center_id?: string;
+    depth?: number;
+    nodes?: Array<Record<string, unknown>>;
+    edges?: Array<Record<string, unknown>>;
+  };
+  ranking_results: Array<Record<string, unknown>>;
+  errors: string[];
+}

@@ -39,3 +39,5 @@ Backend/API_Wrappers/.env.*
 
 KG_Framework/.pytest_cache/
 KG_Framework/.env.example
+Backend/API_Wrappers/.env.example
+Backend/Agents/Agentic-Workflow/.env.example

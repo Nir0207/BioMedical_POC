@@ -5,6 +5,7 @@ Biomedical platform scaffold with three implemented runtime areas:
 - `KG_Framework/`: knowledge graph ingestion, normalization, audit snapshots, and Neo4j loading
 - `Backend/API_Wrappers/`: FastAPI service with Postgres-backed auth, Postgres/Neo4j access, and Cypher-query-backed endpoints
 - `UI/`: React control surface for auth, analytics, graph exploration, and visual query composition
+- `Backend/Agents/Agentic-Workflow/`: bounded LangGraph-powered research workflow service
 
 Biology/domain onboarding:
 - [Bio_ReadMe.md](/Users/nir_002/Dev/BioMedical_POC/Bio_ReadMe.md)
@@ -12,7 +13,7 @@ Biology/domain onboarding:
 ## Repository Layout
 
 - `Backend/API_Wrappers/`: backend API service
-- `Backend/Agents/`: reserved for agent services
+- `Backend/Agents/Agentic-Workflow/`: agentic workflow API service
 - `Bio_ReadMe.md`: biology/domain primer for this POC
 - `DB/Neo4j/CypherQueries/`: categorized reusable Cypher queries
 - `DB/Postgres/PGQueries/`: categorized SQL for auth and reporting
@@ -20,6 +21,62 @@ Biology/domain onboarding:
 - `KG_Framework/`: KG pipeline implementation
 - `Logs/KG_Logs/`: KG runtime logs
 - `UI/`: frontend app for login, dashboard, graph exploration, and query canvas
+
+## Agentic Workflow
+
+The repository now includes a dedicated agent service for graph-grounded disease target research:
+
+- Module: [Backend/Agents/Agentic-Workflow](/Users/nir_002/Dev/BioMedical_POC/Backend/Agents/Agentic-Workflow)
+- API endpoint: `POST /api/v1/agentic/research-query`
+- Default port: `8011`
+- UI tab: `Agentic Workflow` (in [UI](/Users/nir_002/Dev/BioMedical_POC/UI))
+
+Design principles:
+- bounded workflow state, no free-form DB calls
+- fixed tool contracts only
+- retrieval-first answer synthesis
+- local models via Ollama only
+
+Current LangGraph nodes:
+1. query intake
+2. intent/module router
+3. entity resolution
+4. graph query planning
+5. graph retrieval
+6. evidence retrieval
+7. optional ranking
+8. answer synthesis
+9. response formatting
+
+Agent service run command:
+```bash
+docker compose -f Backend/Agents/Agentic-Workflow/docker-compose.yml up --build
+```
+
+Agent tests:
+```bash
+docker compose -f Backend/Agents/Agentic-Workflow/docker-compose.yml --profile test up --build agentic-tests
+```
+
+Ollama models required:
+```bash
+ollama pull qwen2.5:7b
+ollama pull qwen2.5-coder:7b
+ollama pull nomic-embed-text
+```
+
+Example query payload:
+```bash
+curl -X POST http://localhost:8011/api/v1/agentic/research-query \
+  -H "Content-Type: application/json" \
+  -d '{"user_query":"For breast carcinoma, identify top target genes and summarize evidence","top_k":8}'
+```
+
+Known current behavior:
+- natural-language disease prompts are alias-aware and include confidence-gap disambiguation notes
+- compound-intent prompts use known-drug relation fallback when explicit compound links are sparse
+- evidence retrieval is disease-scoped first (with bounded vector fallback) to keep response latency stable
+- if evidence is missing, the service returns graph-only guidance with explicit limitations
 
 ## KG Framework
 
@@ -144,6 +201,7 @@ The KG framework uses:
 
 The UI uses:
 - `VITE_API_BASE_URL`
+- `VITE_AGENTIC_API_BASE_URL`
 
 ## Frontend Notes
 
@@ -157,6 +215,12 @@ Current graph behavior:
 - graph controls stay on the right side
 - labels are rendered on the graph
 - HTML export captures the rendered graph canvas and embeds the graph data payload
+- Agentic Workflow tab order is:
+  1. query composer + execution snapshot
+  2. answer + top ranked targets
+  3. single-line breadcrumb stage monitor
+  4. resolved entities + evidence citations
+  5. graph payload summary
 
 Recommended first graph run:
 - source: `ENSG00000141510`
@@ -167,5 +231,6 @@ Recommended first graph run:
 Verified commands:
 - `docker compose -f KG_Framework/docker-compose.yml --profile test run --rm kg-tests`
 - `docker compose -f Backend/API_Wrappers/docker-compose.yml --profile test run --rm backend-tests`
+- `docker compose -f Backend/Agents/Agentic-Workflow/docker-compose.yml --profile test up --build agentic-tests`
 - `docker compose -f UI/docker-compose.yml --profile test run --rm ui-tests`
 - `docker compose -f UI/docker-compose.yml run --rm ui npm run build`

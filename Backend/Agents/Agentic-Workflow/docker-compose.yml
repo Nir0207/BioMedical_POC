@@ -1,0 +1,42 @@
+services:
+  agentic-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: agentic-api
+    env_file:
+      - ../../../.env
+      - .env.example
+    environment:
+      AGENTIC_APP_PORT: ${AGENTIC_APP_PORT:-8011}
+      AGENTIC_NEO4J_URI: ${AGENTIC_NEO4J_URI:-bolt://host.docker.internal:7688}
+      AGENTIC_NEO4J_USERNAME: ${AGENTIC_NEO4J_USERNAME:-neo4j}
+      AGENTIC_NEO4J_PASSWORD: ${AGENTIC_NEO4J_PASSWORD:-KGFramework_2026!}
+      AGENTIC_OLLAMA_BASE_URL: ${AGENTIC_OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      AGENTIC_ENABLE_LLM: ${AGENTIC_ENABLE_LLM:-true}
+      AGENTIC_API_TOKEN: ${AGENTIC_API_TOKEN:-}
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/tests:/app/tests
+      - ./data/chroma:/app/.chroma
+    ports:
+      - "${AGENTIC_APP_PORT:-8011}:8000"
+
+  agentic-tests:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: agentic-tests
+    environment:
+      AGENTIC_ENABLE_LLM: "false"
+      AGENTIC_NEO4J_URI: bolt://example:7687
+      AGENTIC_NEO4J_USERNAME: neo4j
+      AGENTIC_NEO4J_PASSWORD: test
+      AGENTIC_API_TOKEN: test-token
+      PYTHONPATH: /app/src
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/tests:/app/tests
+      - ./data/chroma:/app/.chroma
+    command: ["pytest", "-q"]
+    profiles: ["test"]
