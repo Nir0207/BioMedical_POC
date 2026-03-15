@@ -1,0 +1,36 @@
+services:
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    container_name: biomedical-ui
+    env_file:
+      - ../.env
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8001}
+      UI_APP_PORT: ${UI_APP_PORT:-5173}
+    volumes:
+      - .:/app
+      - ui_node_modules:/app/node_modules
+    ports:
+      - "${UI_APP_PORT:-5173}:5173"
+
+  ui-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: test
+    container_name: biomedical-ui-tests
+    env_file:
+      - ../.env
+    environment:
+      VITE_API_BASE_URL: http://localhost:8001
+    volumes:
+      - .:/app
+      - ui_node_modules:/app/node_modules
+    command: ["npm", "run", "test"]
+    profiles: ["test"]
+
+volumes:
+  ui_node_modules:

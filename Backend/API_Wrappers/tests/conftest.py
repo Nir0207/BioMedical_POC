@@ -3,6 +3,7 @@ from collections.abc import AsyncGenerator
 
 import pytest
 import pytest_asyncio
+from fastapi import HTTPException
 from httpx import ASGITransport, AsyncClient
 
 from biomedical_api.api.dependencies import get_data_service
@@ -64,6 +65,135 @@ class FakeNeo4jDataService(DataService):
             "query_id": query_id,
             "record_count": 1,
             "records": [{"target.node_id": "ENSG000001", "score": 0.9}],
+        }
+
+    async def fetch_query_canvas_categories(self) -> list[dict[str, object]]:
+        return [
+            {"category": "Gene", "count": 100},
+            {"category": "Disease", "count": 80},
+            {"category": "Protein", "count": 60},
+        ]
+
+    async def search_query_canvas_nodes(self, category: str | None, search: str, limit: int) -> list[dict[str, object]]:
+        records = [
+            {
+                "node_id": "ENSG00000141510",
+                "name": "TP53",
+                "category": "Gene",
+                "labels": ["Entity", "Gene"],
+            },
+            {
+                "node_id": "UNIPROT:P04637",
+                "name": "P04637",
+                "category": "Protein",
+                "labels": ["Entity", "Protein"],
+            },
+            {
+                "node_id": "MONDO_0007254",
+                "name": "breast cancer",
+                "category": "Disease",
+                "labels": ["Entity", "Disease"],
+            },
+        ]
+        filtered = [
+            record
+            for record in records
+            if (not category or record["category"] == category)
+            and (not search or search.lower() in record["name"].lower() or search.lower() in record["node_id"].lower())
+        ]
+        return filtered[:limit]
+
+    async def validate_query_canvas_relation(self, source_node_id: str, target_node_id: str) -> dict[str, object]:
+        exists = {source_node_id, target_node_id} == {"ENSG00000141510", "MONDO_0007254"}
+        return {
+            "source": {
+                "node_id": source_node_id,
+                "name": "TP53" if source_node_id == "ENSG00000141510" else "Source Node",
+                "category": "Gene",
+                "labels": ["Entity", "Gene"],
+            },
+            "target": {
+                "node_id": target_node_id,
+                "name": "breast cancer" if target_node_id == "MONDO_0007254" else "Target Node",
+                "category": "Disease",
+                "labels": ["Entity", "Disease"],
+            },
+            "exists": exists,
+            "related_to_types": ["ASSOCIATED_WITH"] if exists else [],
+            "relation_fact_types": ["TARGET_DISEASE_ASSOCIATION"] if exists else [],
+            "message": "Direct relation found between the selected nodes." if exists else "No relation found.",
+            "generated_cypher": (
+                "MATCH (source:Entity {node_id: $source_node_id}) "
+                "MATCH (target:Entity {node_id: $target_node_id}) "
+                "RETURN source, target"
+            ),
+            "parameters": {
+                "source_node_id": source_node_id,
+                "target_node_id": target_node_id,
+                "neighbor_limit": 8,
+            },
+        }
+
+    async def run_query_canvas_relation(
+        self,
+        source_node_id: str,
+        target_node_id: str,
+        neighbor_limit: int,
+        cypher: str | None = None,
+        parameters: dict[str, object] | None = None,
+    ) -> dict[str, object]:
+        if cypher and "DELETE" in cypher.upper():
+            raise HTTPException(status_code=422, detail="Only read-only Cypher queries are allowed from Query Canvas")
+        return {
+            "query_id": "query_canvas_relation",
+            "record_count": 2,
+            "executed_cypher": cypher
+            or "MATCH (source:Entity {node_id: $source_node_id}) MATCH (target:Entity {node_id: $target_node_id}) RETURN source, target",
+            "parameters": {
+                "source_node_id": source_node_id,
+                "target_node_id": target_node_id,
+                "neighbor_limit": neighbor_limit,
+                **(parameters or {}),
+            },
+            "records": [
+                {
+                    "source_node": {
+                        "id": 1,
+                        "labels": ["Entity", "Gene"],
+                        "properties": {"node_id": source_node_id, "name": "TP53"},
+                    },
+                    "target_node": {
+                        "id": 2,
+                        "labels": ["Entity", "Disease"],
+                        "properties": {"node_id": target_node_id, "name": "breast cancer"},
+                    },
+                },
+                {
+                    "path": {
+                        "nodes": [
+                            {
+                                "id": 1,
+                                "labels": ["Entity", "Gene"],
+                                "properties": {"node_id": source_node_id, "name": "TP53"},
+                            },
+                            {
+                                "id": 2,
+                                "labels": ["Entity", "Disease"],
+                                "properties": {"node_id": target_node_id, "name": "breast cancer"},
+                            },
+                        ],
+                        "relationships": [
+                            {
+                                "id": 10,
+                                "type": "HAS_RELATION_FACT",
+                                "start_node_id": 1,
+                                "end_node_id": 2,
+                                "properties": {"relation_type": "TARGET_DISEASE_ASSOCIATION"},
+                            }
+                        ],
+                    }
+                },
+            ],
         }
 
 

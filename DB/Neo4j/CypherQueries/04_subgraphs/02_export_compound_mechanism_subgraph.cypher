@@ -3,6 +3,7 @@
 
 MATCH path = (c:Entity {node_id: $compound_node_id})-[r:RELATED_TO]->(target:Entity)
 WHERE r.relationship_type = 'TARGETS'
-OPTIONAL MATCH fact_path = (c)-[f:HAS_RELATION_FACT]->(target)
+OPTIONAL MATCH fact_path = (c)-[f:HAS_RELATION_FACT]-(target)
+WHERE f.relation_type = 'COMPOUND_TARGET_MECHANISM'
 RETURN path, fact_path
 LIMIT 100;
